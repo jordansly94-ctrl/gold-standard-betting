@@ -219,8 +219,8 @@ td:first-child{text-align:left;font-weight:600;color:var(--text);}
 </div>
 
 <script>
-const BETS_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vSmx-iwh3vuojGOfmBGLU7miezIPcNmoxkCeEYekJA30SIDNKmQo8BM63A3a3EK1Q/pub?gid=869379039&single=true&output=csv';
-const HYP_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vSmx-iwh3vuojGOfmBGLU7miezIPcNmoxkCeEYekJA30SIDNKmQo8BM63A3a3EK1Q/pub?gid=575298877&single=true&output=csv';
+const PROXY='https://corsproxy.io/?';const BETS_URL=PROXY+encodeURIComponent('https://docs.google.com/spreadsheets/d/e/2PACX-1vSmx-iwh3vuojGOfmBGLU7miezIPcNmoxkCeEYekJA30SIDNKmQo8BM63A3a3EK1Q/pub?gid=869379039&single=true&output=csv');
+const HYP_URL=PROXY+encodeURIComponent('https://docs.google.com/spreadsheets/d/e/2PACX-1vSmx-iwh3vuojGOfmBGLU7miezIPcNmoxkCeEYekJA30SIDNKmQo8BM63A3a3EK1Q/pub?gid=575298877&single=true&output=csv');
 
 let allBets=[],allHyp=[],period=7,tipsterFilter='All';
 
