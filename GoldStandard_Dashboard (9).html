@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gold Standard Betting</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#0a0e17;--bg2:#111827;--bg3:#1a2235;--bg4:#212d40;
+  --border:#2a3547;--gold:#e3b341;--gold-dim:#c49a2a;
+  --green:#3fb950;--red:#f85149;--text:#e6edf3;
+  --muted:#6b7280;--dim:#9ca3af;
+}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:13px;min-height:100vh;}
+nav{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 24px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.nav-left{display:flex;align-items:center;gap:10px;}
+.nav-icon{width:34px;height:34px;background:var(--gold);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;}
+.nav-title{font-size:15px;font-weight:600;}
+.nav-sub{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:1px;}
+.nav-right{display:flex;align-items:center;gap:10px;}
+.tipster-select{background:var(--bg3);border:1px solid var(--border);color:var(--dim);padding:6px 28px 6px 12px;border-radius:6px;font-size:13px;font-family:inherit;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b7280'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;}
+.refresh-btn{background:var(--bg3);border:1px solid var(--border);color:var(--muted);padding:6px 11px;border-radius:6px;cursor:pointer;font-size:15px;transition:all .2s;}
+.refresh-btn:hover{border-color:var(--gold);color:var(--gold);}
+.updated{font-size:10px;color:var(--muted);}
+#loadingScreen{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;gap:14px;transition:opacity .5s;}
+#loadingScreen.hidden{opacity:0;pointer-events:none;}
+.load-title{font-size:22px;font-weight:700;color:var(--gold);}
+.load-sub{font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;}
+.load-bar-wrap{width:200px;height:3px;background:var(--bg3);border-radius:3px;overflow:hidden;}
+.load-bar{height:100%;background:var(--gold);width:0%;transition:width .4s ease;}
+.load-status{font-size:11px;color:var(--muted);}
+.main{padding:16px 24px;max-width:1400px;margin:0 auto;}
+.err{background:rgba(248,81,73,.1);border:1px solid rgba(248,81,73,.35);border-radius:8px;padding:11px 16px;font-size:12px;color:var(--red);margin-bottom:14px;display:none;line-height:1.5;}
+.at-banner{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px;}
+.at-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 16px;}
+.at-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:7px;}
+.at-val{font-size:21px;font-weight:700;}
+.c-green{color:var(--green)!important;}
+.c-red{color:var(--red)!important;}
+.c-gold{color:var(--gold)!important;}
+.c-dim{color:var(--dim)!important;}
+.ptabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:14px;}
+.ptab{padding:8px 22px 11px;font-size:12px;font-weight:500;color:var(--muted);cursor:pointer;border:none;background:transparent;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;text-align:left;}
+.ptab-main{display:block;letter-spacing:.4px;}
+.ptab-sub{font-size:10px;color:var(--muted);margin-top:2px;display:block;}
+.ptab.active{color:var(--gold);border-bottom-color:var(--gold);}
+.ptab.active .ptab-sub{color:var(--gold);}
+.ptab:hover:not(.active){color:var(--dim);}
+.hero{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:18px 22px;display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.hero-lbl{font-size:11px;font-weight:600;color:var(--gold);text-transform:uppercase;letter-spacing:1.5px;display:flex;align-items:center;gap:6px;margin-bottom:7px;}
+.hero-val{font-size:38px;font-weight:700;line-height:1;color:var(--gold);}
+.hero-stats{display:flex;gap:30px;}
+.hs-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px;}
+.hs-val{font-size:17px;font-weight:600;color:var(--gold);}
+/* 6-box grid — 3 cols on desktop, 2 on mobile */
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px;}
+.sc{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 16px;}
+.sc-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:7px;}
+.sc-val{font-size:23px;font-weight:700;}
+.chart-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:14px;}
+.chart-title{font-size:12px;font-weight:500;color:var(--dim);margin-bottom:10px;}
+.chart-wrap{height:200px;}
+#chartSvg{width:100%;height:100%;overflow:visible;}
+.monthly-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:14px;}
+.monthly-title{font-size:12px;font-weight:500;color:var(--dim);margin-bottom:12px;}
+.monthly-grid{display:flex;gap:10px;flex-wrap:wrap;}
+.month-cell{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px 16px;text-align:center;min-width:90px;flex:1;}
+.month-cell.pos{border-color:rgba(63,185,80,.3);background:rgba(63,185,80,.05);}
+.month-cell.neg{border-color:rgba(248,81,73,.3);background:rgba(248,81,73,.05);}
+.month-name{font-size:10px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;}
+.month-val{font-size:18px;font-weight:700;}
+.month-cell.pos .month-val{color:var(--green);}
+.month-cell.neg .month-val{color:var(--red);}
+.tbl-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:16px;}
+.tbl-title{font-size:12px;font-weight:500;color:var(--dim);margin-bottom:12px;}
+.tbl-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;}
+thead th{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;padding:6px 12px;text-align:right;border-bottom:1px solid var(--border);white-space:nowrap;font-weight:500;}
+thead th:first-child{text-align:left;}
+tbody tr{border-bottom:1px solid #1a2235;}
+tbody tr:last-child{border-bottom:none;}
+tbody tr:hover{background:var(--bg3);}
+td{padding:10px 12px;text-align:right;font-size:12px;color:var(--dim);white-space:nowrap;}
+td:first-child{text-align:left;font-weight:600;color:var(--text);}
+.roi-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:500;}
+.roi-pos{background:rgba(63,185,80,.15);color:#3fb950;}
+.roi-neg{background:rgba(248,81,73,.15);color:#f85149;}
+.roi-neu{background:var(--bg4);color:var(--muted);}
+.hb-div td{padding:2px;background:var(--bg3);font-size:0;}
+@media(max-width:768px){
+  .at-banner{grid-template-columns:1fr 1fr;}
+  .stat-grid{grid-template-columns:1fr 1fr;}
+  .hero{flex-direction:column;gap:14px;align-items:flex-start;}
+  .main{padding:12px;}
+  .hero-stats{gap:16px;}
+  .monthly-grid{gap:8px;}
+  .ptab{padding:8px 14px 11px;}
+}
+</style>
+</head>
+<body>
+
+<div id="loadingScreen">
+  <div class="load-title">Gold Standard Betting</div>
+  <div class="load-sub">EV Dashboard</div>
+  <div class="load-bar-wrap"><div class="load-bar" id="loadBar"></div></div>
+  <div class="load-status" id="loadStatus">Connecting to sheets...</div>
+</div>
+
+<nav>
+  <div class="nav-left">
+    <div class="nav-icon">⭐</div>
+    <div>
+      <div class="nav-title">Gold Standard Betting</div>
+      <div class="nav-sub">EV Dashboard</div>
+    </div>
+  </div>
+  <div class="nav-right">
+    <span class="updated" id="updatedTime"></span>
+    <select class="tipster-select" id="tipsterSelect" onchange="setTipster(this.value)">
+      <option value="All">All</option>
+    </select>
+    <button class="refresh-btn" onclick="loadData()" title="Refresh">↻</button>
+  </div>
+</nav>
+
+<div class="main">
+  <div class="err" id="errMsg"></div>
+
+  <div class="at-banner">
+    <div class="at-card"><div class="at-label">All Time Profit</div><div class="at-val c-green" id="atProfit">—</div></div>
+    <div class="at-card"><div class="at-label">All Time ROI</div><div class="at-val c-green" id="atROI">—</div></div>
+    <div class="at-card"><div class="at-label">All Time Turnover</div><div class="at-val c-gold" id="atTurnover">—</div></div>
+    <div class="at-card"><div class="at-label">All Time Units</div><div class="at-val c-green" id="atUnits">—</div></div>
+  </div>
+
+  <div class="ptabs">
+    <button class="ptab" onclick="setPeriod(1,this)">
+      <span class="ptab-main">DAILY</span>
+      <span class="ptab-sub" id="sub1">—</span>
+    </button>
+    <button class="ptab active" onclick="setPeriod(7,this)">
+      <span class="ptab-main">LAST 7 DAYS</span>
+      <span class="ptab-sub" id="sub7">—</span>
+    </button>
+    <button class="ptab" onclick="setPeriod(28,this)">
+      <span class="ptab-main">LAST 28 DAYS</span>
+      <span class="ptab-sub" id="sub28">—</span>
+    </button>
+    <button class="ptab" onclick="setPeriod(0,this)">
+      <span class="ptab-main">ALL TIME</span>
+      <span class="ptab-sub">INCEPTION</span>
+    </button>
+  </div>
+
+  <div class="hero">
+    <div>
+      <div class="hero-lbl">⚡ TURNOVER — <span id="heroLbl">LAST 7 DAYS</span></div>
+      <div class="hero-val" id="heroTurnover">—</div>
+    </div>
+    <div class="hero-stats">
+      <div><div class="hs-lbl">Bets</div><div class="hs-val" id="heroBets">—</div></div>
+      <div><div class="hs-lbl">Avg Stake</div><div class="hs-val" id="heroAvg">—</div></div>
+      <div><div class="hs-lbl">Strike</div><div class="hs-val" id="heroStrike">—</div></div>
+    </div>
+  </div>
+
+  <!-- 6 stat boxes: 3x2 grid -->
+  <div class="stat-grid">
+    <div class="sc"><div class="sc-lbl">Profit</div><div class="sc-val c-green" id="scProfit">—</div></div>
+    <div class="sc"><div class="sc-lbl">ROI</div><div class="sc-val c-green" id="scROI">—</div></div>
+    <div class="sc"><div class="sc-lbl">Units Gained</div><div class="sc-val c-gold" id="scUnits">—</div></div>
+    <div class="sc"><div class="sc-lbl">Profit / Bet</div><div class="sc-val c-green" id="scPPB">—</div></div>
+    <div class="sc"><div class="sc-lbl">W / L</div><div class="sc-val c-dim" id="scWL">—</div></div>
+    <div class="sc"><div class="sc-lbl">Avg Odds</div><div class="sc-val c-gold" id="scAvgOdds">—</div></div>
+  </div>
+
+  <div class="chart-card">
+    <div class="chart-title">Cumulative Profit</div>
+    <div class="chart-wrap"><svg id="chartSvg" viewBox="0 0 800 200" preserveAspectRatio="none"></svg></div>
+  </div>
+
+  <div class="monthly-card">
+    <div class="monthly-title">Monthly P&amp;L</div>
+    <div class="monthly-grid" id="monthlyGrid"></div>
+  </div>
+
+  <div class="tbl-card">
+    <div class="tbl-title" id="tblTitle">Tipster Breakdown — Last 7 Days</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>TIPSTER</th><th>TURNOVER</th><th>BETS</th><th>AVG ODDS</th>
+          <th>ROI</th><th>UNITS</th><th>PROFIT</th><th>P/BET</th><th>STRIKE</th>
+        </tr></thead>
+        <tbody id="tblBody"></tbody>
+      </table>
+    </div>
+  </div>
+  <!-- RECENT BETS FEED -->
+  <div class="tbl-card" style="margin-top:14px;">
+    <div class="tbl-title" style="display:flex;align-items:center;justify-content:space-between;">
+      <span>🕐 Recent Bets</span>
+      <span id="lastUpdatedFeed" style="font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace;"></span>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>Time</th><th>Tipster</th><th>Selection</th><th>Bookie</th>
+          <th>Odds</th><th>Stake</th><th>Result</th><th>P&amp;L</th>
+        </tr></thead>
+        <tbody id="recentBody"></tbody>
+      </table>
+    </div>
+  </div>
+  <div style="height:30px;"></div>
+</div>
+
+<script>
+const BETS_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vSmx-iwh3vuojGOfmBGLU7miezIPcNmoxkCeEYekJA30SIDNKmQo8BM63A3a3EK1Q/pub?gid=869379039&single=true&output=csv';
+const HYP_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vSmx-iwh3vuojGOfmBGLU7miezIPcNmoxkCeEYekJA30SIDNKmQo8BM63A3a3EK1Q/pub?gid=575298877&single=true&output=csv';
+
+let allBets=[],allHyp=[],period=7,tipsterFilter='All';
+
+// ── CSV PARSER ─────────────────────────────────────────────────────────────
+function parseCSV(raw){
+  const lines=raw.trim().split('\n');
+  let headerIdx=0;
+  for(let i=0;i<Math.min(5,lines.length);i++){
+    const joined=splitLine(lines[i]).join('|').toUpperCase();
+    if(joined.includes('DATE')||joined.includes('TIPSTER')||joined.includes('STAKE')){headerIdx=i;break;}
+  }
+  const headers=splitLine(lines[headerIdx]).map(h=>h.trim().toUpperCase());
+  const rows=[];
+  for(let i=headerIdx+1;i<lines.length;i++){
+    const vals=splitLine(lines[i]);
+    if(vals.every(v=>!v.trim())) continue;
+    const obj={};
+    headers.forEach((h,idx)=>{if(h) obj[h]=(vals[idx]||'').trim();});
+    rows.push(obj);
+  }
+  return rows;
+}
+function splitLine(line){
+  const vals=[];let cur='',inQ=false;
+  for(let i=0;i<line.length;i++){
+    if(line[i]==='"'){inQ=!inQ;}
+    else if(line[i]===','&&!inQ){vals.push(cur);cur='';}
+    else cur+=line[i];
+  }
+  vals.push(cur);
+  return vals.map(v=>v.replace(/^"|"$/g,'').trim());
+}
+
+// ── NUMBER CLEANER ─────────────────────────────────────────────────────────
+function cleanNum(s){
+  if(!s||s==='-'||s===''||s==='N/A') return 0;
+  const neg=s.includes('(')||(s.trim().startsWith('-')&&s.trim().length>1);
+  const clean=s.replace(/[$,\(\)\+\s]/g,'').replace(/^-/,'');
+  const n=parseFloat(clean);
+  return isNaN(n)?0:(neg?-n:n);
+}
+
+// ── DATE HELPERS ───────────────────────────────────────────────────────────
+function parseDate(s){
+  if(!s) return null;
+  let m=s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+  if(m) return new Date(+m[3],+m[2]-1,+m[1]);
+  m=s.match(/^(\d{4})[\/\-](\d{2})[\/\-](\d{2})/);
+  if(m) return new Date(+m[1],+m[2]-1,+m[3]);
+  return null;
+}
+// cutoff: goes back (days-1) so that "last 7 days" = today + 6 previous days = 7 inclusive
+function cutoff(days){
+  if(days===1){const d=new Date();d.setTime(d.getTime()-24*60*60*1000);return d;}
+  const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-(days-1));return d;
+}
+function fmtDateShort(d){
+  return d.toLocaleDateString('en-AU',{day:'numeric',month:'short'});
+}
+
+// ── PARSE BETS ─────────────────────────────────────────────────────────────
+function parseBets(rows){
+  return rows.map(r=>({
+    date:parseDate(r['DATE']||''),
+    result:(r['RESULT']||'').toUpperCase().trim(),
+    stake:cleanNum(r['STAKE']||''),
+    odds:cleanNum(r['ODDS']||''),
+    netCash:cleanNum(r['NET CASH']||''),
+    unitsGained:cleanNum(r['UNITS GAINED']||''),
+    tipster:toTitle((r['TIPSTER']||'Unknown').trim()),
+    _raw:r
+  })).filter(r=>r.date&&r.stake>0);
+}
+
+// ── PARSE HYPERBOT ─────────────────────────────────────────────────────────
+function parseHyp(rows){
+  if(!rows.length) return[];
+  const keys=Object.keys(rows[0]);
+  const tsKey=keys.find(k=>/TIMESTAMP|DATE/i.test(k))||keys[0];
+  const plKey=keys.find(k=>/^P[\/_ ]?L$|PROFIT|NET.CASH/i.test(k))||'';
+  const stKey=keys.find(k=>/^STAKE$/i.test(k))||'';
+  const odKey=keys.find(k=>/^ODDS$/i.test(k))||'';
+  return rows.map(r=>{
+    const date=parseDate(r[tsKey]||'');
+    const pl=cleanNum(r[plKey]||'');
+    const stake=cleanNum(r[stKey]||'');
+    const odds=cleanNum(r[odKey]||'');
+    return{date,netCash:pl,stake,odds,unitsGained:0,tipster:'Hyperbot',result:pl>0?'W':pl<0?'L':'R'};
+  }).filter(r=>r.date);
+}
+function toTitle(s){return s.toLowerCase().replace(/\b\w/g,c=>c.toUpperCase());}
+
+// ── FILTER ─────────────────────────────────────────────────────────────────
+function filterBets(bets,days,tip){
+  const c=days>0?cutoff(days):null;
+  return bets.filter(b=>{
+    if(c&&b.date<c) return false;
+    if(tip!=='All'&&b.tipster!==tip) return false;
+    return true;
+  });
+}
+
+// ── STATS ──────────────────────────────────────────────────────────────────
+function calcStats(bets){
+  if(!bets.length) return{turnover:0,profit:0,roi:0,units:0,bets:0,wins:0,losses:0,avgOdds:0,avgStake:0,ppb:0,strike:0};
+  const to=bets.reduce((s,b)=>s+b.stake,0);
+  const pr=bets.reduce((s,b)=>s+b.netCash,0);
+  const un=bets.reduce((s,b)=>s+b.unitsGained,0);
+  const wi=bets.filter(b=>b.result==='W').length;
+  const lo=bets.filter(b=>b.result==='L').length;
+  const oa=bets.filter(b=>b.odds>1);
+  const ao=oa.length?oa.reduce((s,b)=>s+b.odds,0)/oa.length:0;
+  return{turnover:to,profit:pr,roi:to>0?(pr/to)*100:0,units:un,
+    bets:bets.length,wins:wi,losses:lo,avgOdds:ao,
+    avgStake:bets.length?to/bets.length:0,
+    ppb:bets.length?pr/bets.length:0,
+    strike:(wi+lo)>0?wi/(wi+lo)*100:0};
+}
+
+// ── LOAD ───────────────────────────────────────────────────────────────────
+async function loadData(){
+  setLoad(0,'Connecting...');showLoad(true);showErr('');
+  try{
+    setLoad(20,'Fetching data...');
+    const[bRaw,hRaw]=await Promise.all([
+      fetch(BETS_URL).then(r=>{if(!r.ok)throw new Error('Bets: HTTP '+r.status);return r.text();}),
+      fetch(HYP_URL).then(r=>{if(!r.ok)throw new Error('Hyperbot: HTTP '+r.status);return r.text();})
+    ]);
+    setLoad(55,'Parsing...');
+    allBets=parseBets(parseCSV(bRaw));
+    allHyp=parseHyp(parseCSV(hRaw));
+    setLoad(85,'Rendering...');
+    buildOptions();render();
+    setLoad(100,'Done');
+    await wait(300);showLoad(false);
+    document.getElementById('updatedTime').textContent=
+      'Updated '+new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'});
+  }catch(e){
+    showErr('Could not load: '+e.message);
+    showLoad(false);console.error(e);
+  }
+}
+function wait(ms){return new Promise(r=>setTimeout(r,ms));}
+function setLoad(p,m){document.getElementById('loadBar').style.width=p+'%';document.getElementById('loadStatus').textContent=m;}
+function showLoad(on){document.getElementById('loadingScreen').classList.toggle('hidden',!on);}
+function showErr(m){const e=document.getElementById('errMsg');e.style.display=m?'block':'none';if(m)e.textContent=m;}
+
+// ── TIPSTER DROPDOWN ───────────────────────────────────────────────────────
+function buildOptions(){
+  const tips=[...new Set(allBets.map(b=>b.tipster))].filter(Boolean).sort();
+  const sel=document.getElementById('tipsterSelect');
+  sel.innerHTML='<option value="All">All</option>';
+  tips.forEach(t=>{const o=document.createElement('option');o.value=o.textContent=t;sel.appendChild(o);});
+  const hb=document.createElement('option');hb.value=hb.textContent='Hyperbot';sel.appendChild(hb);
+}
+
+// ── RENDER ─────────────────────────────────────────────────────────────────
+function render(){
+  const bf=filterBets(allBets,period,tipsterFilter==='Hyperbot'?'__none__':tipsterFilter);
+  const hf=filterBets(allHyp,period,'Hyperbot');
+  const forStats=tipsterFilter==='Hyperbot'?hf:tipsterFilter==='All'?[...bf,...hf]:bf;
+
+  // All-time banner
+  const at=calcStats([...allBets,...allHyp]);
+  setText('atProfit',fmt$(at.profit));colorEl('atProfit',at.profit);
+  setText('atROI',fmtP(at.roi));colorEl('atROI',at.roi);
+  setText('atTurnover',fmt$(at.turnover));
+  setText('atUnits',fmtU(at.units));colorEl('atUnits',at.units);
+
+  // Period tab sub-labels — show actual date range
+  const now=new Date();
+  const fmt=d=>fmtDateShort(d);
+  const c1=cutoff(1),c7=cutoff(7),c28=cutoff(28);
+  document.getElementById('sub1').textContent='Last 24 hours';
+  document.getElementById('sub7').textContent=fmt(c7)+' – '+fmt(now);
+  document.getElementById('sub28').textContent=fmt(c28)+' – '+fmt(now);
+
+  // Hero
+  const lbl=period===1?'DAILY':period===7?'LAST 7 DAYS':period===28?'LAST 28 DAYS':'ALL TIME';
+  setText('heroLbl',lbl);
+  const s=calcStats(forStats);
+  setText('heroTurnover',fmt$(s.turnover));
+  setText('heroBets',s.bets);
+  setText('heroAvg',fmt$(s.avgStake));
+  setText('heroStrike',fmtP(s.strike));
+
+  // 6 stat boxes
+  setText('scProfit',fmt$(s.profit));colorEl('scProfit',s.profit);
+  setText('scROI',fmtP(s.roi));colorEl('scROI',s.roi);
+  setText('scUnits',fmtU(s.units));
+  setText('scPPB',fmt$(s.ppb));colorEl('scPPB',s.ppb);
+  document.getElementById('scWL').textContent=s.wins+'W  '+s.losses+'L';
+  setText('scAvgOdds',s.avgOdds>1?s.avgOdds.toFixed(2)+'x':'—');
+
+  setText('tblTitle','Tipster Breakdown — '+periodLabel(lbl));
+  drawChart(bf,hf);
+  buildMonthly([...allBets,...allHyp]);
+  buildTable(bf,hf);
+  buildRecentFeed(allBets);
+}
+
+function periodLabel(l){
+  if(l==='DAILY') return'Today (Last 24h)';
+  if(l==='LAST 7 DAYS') return'Last 7 Days';
+  if(l==='LAST 28 DAYS') return'Last 28 Days';
+  return'All Time';
+}
+
+// ── CHART ──────────────────────────────────────────────────────────────────
+function drawChart(bets,hyp){
+  const all=[...bets,...hyp].filter(b=>b.date).sort((a,b)=>a.date-b.date);
+  const svg=document.getElementById('chartSvg');
+  svg.innerHTML='';
+  const W=800,H=200,PL=60,PR=10,PT=10,PB=28;
+  const cW=W-PL-PR,cH=H-PT-PB;
+
+  if(all.length<2){
+    const t=se('text');sa(t,{x:400,y:100,fill:'#6b7280','font-size':12,'text-anchor':'middle'});
+    t.textContent='No data for this period';svg.appendChild(t);return;
+  }
+
+  // Aggregate by day
+  const dayMap={};let cum=0;
+  all.forEach(b=>{
+    cum+=b.netCash;
+    const dk=b.date.toISOString().slice(0,10);
+    dayMap[dk]=cum;
+  });
+  const pts=Object.entries(dayMap).sort((a,b)=>a[0].localeCompare(b[0]))
+    .map(([dk,v])=>({d:new Date(dk+'T00:00:00'),v}));
+
+  const vals=pts.map(p=>p.v);
+  const minV=Math.min(0,...vals),maxV=Math.max(0,...vals),rng=maxV-minV||1;
+  const minD=pts[0].d.getTime(),maxD=pts[pts.length-1].d.getTime(),dRng=maxD-minD||1;
+  const px=d=>PL+((d.getTime()-minD)/dRng)*cW;
+  const py=v=>PT+cH-((v-minV)/rng)*cH;
+
+  // Gradient
+  const defs=se('defs');
+  defs.innerHTML=`<linearGradient id="cg" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#3fb950" stop-opacity=".35"/>
+    <stop offset="100%" stop-color="#3fb950" stop-opacity=".02"/>
+  </linearGradient>`;
+  svg.appendChild(defs);
+
+  // Grid
+  for(let i=0;i<=4;i++){
+    const v=minV+(rng/4)*i,y=py(v);
+    const gl=se('line');sa(gl,{x1:PL,x2:W-PR,y1:y,y2:y,stroke:'#1a2235','stroke-width':1});svg.appendChild(gl);
+    const lb=se('text');sa(lb,{x:PL-6,y:y+4,fill:'#6b7280','font-size':9,'text-anchor':'end'});
+    lb.textContent=Math.abs(v)>=1000?'$'+(v/1000).toFixed(1)+'k':'$'+v.toFixed(0);svg.appendChild(lb);
+  }
+
+  // Smooth bezier path
+  function makePath(pts){
+    if(pts.length<2) return`M${px(pts[0].d)},${py(pts[0].v)}`;
+    let d=`M${px(pts[0].d)},${py(pts[0].v)}`;
+    for(let i=1;i<pts.length;i++){
+      const p=pts[i-1],c=pts[i];
+      const mx=(px(p.d)+px(c.d))/2;
+      d+=` C${mx},${py(p.v)} ${mx},${py(c.v)} ${px(c.d)},${py(c.v)}`;
+    }
+    return d;
+  }
+
+  const linePath=makePath(pts);
+  const areaPath=linePath+` L${px(pts[pts.length-1].d)},${py(0)} L${px(pts[0].d)},${py(0)} Z`;
+
+  const area=se('path');area.setAttribute('d',areaPath);area.setAttribute('fill','url(#cg)');svg.appendChild(area);
+
+  if(minV<0){
+    const zl=se('line');sa(zl,{x1:PL,x2:W-PR,y1:py(0),y2:py(0),stroke:'#2a3547','stroke-dasharray':'4,3'});svg.appendChild(zl);
+  }
+
+  const line=se('path');line.setAttribute('d',linePath);
+  sa(line,{fill:'none',stroke:'#3fb950','stroke-width':2,'stroke-linejoin':'round','stroke-linecap':'round'});
+  svg.appendChild(line);
+
+  // End dot
+  const last=pts[pts.length-1];
+  const dot=se('circle');sa(dot,{cx:px(last.d),cy:py(last.v),r:4,fill:'#0a0e17',stroke:'#3fb950','stroke-width':2});
+  svg.appendChild(dot);
+
+  // X labels
+  const xt=Math.min(6,pts.length);
+  for(let i=0;i<xt;i++){
+    const idx=Math.floor(i*(pts.length-1)/(xt-1));
+    const p=pts[idx];
+    const lb=se('text');sa(lb,{x:px(p.d),y:H-4,fill:'#6b7280','font-size':9,'text-anchor':'middle'});
+    lb.textContent=p.d.toLocaleDateString('en-AU',{day:'numeric',month:'short'});svg.appendChild(lb);
+  }
+}
+function se(t){return document.createElementNS('http://www.w3.org/2000/svg',t);}
+function sa(el,a){Object.entries(a).forEach(([k,v])=>el.setAttribute(k,v));}
+
+// ── MONTHLY P&L ────────────────────────────────────────────────────────────
+function buildMonthly(bets){
+  const grid=document.getElementById('monthlyGrid');
+  grid.innerHTML='';
+  const monthMap={};
+  bets.forEach(b=>{
+    if(!b.date) return;
+    const key=b.date.getFullYear()+'-'+String(b.date.getMonth()+1).padStart(2,'0');
+    monthMap[key]=(monthMap[key]||0)+b.netCash;
+  });
+  Object.entries(monthMap).sort((a,b)=>a[0].localeCompare(b[0])).forEach(([key,val])=>{
+    const[yr,mo]=key.split('-');
+    const label=new Date(+yr,+mo-1,1).toLocaleDateString('en-AU',{month:'short',year:'2-digit'});
+    const cell=document.createElement('div');
+    cell.className='month-cell '+(val>=0?'pos':'neg');
+    const abs=Math.abs(val);
+    const display=abs>=1000?'$'+(val/1000).toFixed(1)+'k':fmt$(val);
+    cell.innerHTML=`<div class="month-name">${label}</div><div class="month-val">${display}</div>`;
+    grid.appendChild(cell);
+  });
+}
+
+// ── TIPSTER TABLE ──────────────────────────────────────────────────────────
+function buildTable(bets,hyp){
+  const tbody=document.getElementById('tblBody');
+  tbody.innerHTML='';
+  const tips=[...new Set(bets.map(b=>b.tipster))].sort();
+  if(!tips.length&&!hyp.length){
+    tbody.innerHTML='<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:20px;">No data for this period</td></tr>';
+    return;
+  }
+  tips.map(t=>({name:t,s:calcStats(bets.filter(b=>b.tipster===t))}))
+    .sort((a,b)=>b.s.turnover-a.s.turnover)
+    .forEach(({name,s})=>{
+      const tr=document.createElement('tr');
+      tr.innerHTML=`
+        <td>${name}</td>
+        <td class="c-gold">${fmt$(s.turnover)}</td>
+        <td>${s.bets}</td>
+        <td>${s.avgOdds>1?s.avgOdds.toFixed(2):'—'}</td>
+        <td><span class="roi-badge ${roiCls(s.roi)}">${fmtP(s.roi)}</span></td>
+        <td class="${s.units>=0?'c-green':'c-red'}">${fmtU(s.units)}</td>
+        <td class="${s.profit>=0?'c-green':'c-red'}">${fmt$(s.profit)}</td>
+        <td class="${s.ppb>=0?'c-green':'c-red'}">${fmt$(s.ppb)}</td>
+        <td>${fmtP(s.strike)}</td>`;
+      tbody.appendChild(tr);
+    });
+  if(hyp.length>0){
+    const div=document.createElement('tr');div.className='hb-div';
+    div.innerHTML='<td colspan="9"></td>';tbody.appendChild(div);
+    const hs=calcStats(hyp);
+    const hr=document.createElement('tr');
+    hr.innerHTML=`
+      <td style="color:#a78bfa">⚙ Hyperbot</td>
+      <td class="c-gold">${fmt$(hs.turnover)}</td>
+      <td>${hs.bets}</td><td>—</td>
+      <td><span class="roi-badge ${roiCls(hs.roi)}">${fmtP(hs.roi)}</span></td>
+      <td class="${hs.units>=0?'c-green':'c-red'}">${fmtU(hs.units)}</td>
+      <td class="${hs.profit>=0?'c-green':'c-red'}">${fmt$(hs.profit)}</td>
+      <td class="${hs.ppb>=0?'c-green':'c-red'}">${fmt$(hs.ppb)}</td>
+      <td>${fmtP(hs.strike)}</td>`;
+    tbody.appendChild(hr);
+  }
+}
+
+// ── HELPERS ────────────────────────────────────────────────────────────────
+function roiCls(r){return r>2?'roi-pos':r<-2?'roi-neg':'roi-neu';}
+function fmt$(n){
+  if(isNaN(n)) return'—';
+  const a=Math.abs(n);
+  const s=a>=1000?'$'+a.toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2}):'$'+a.toFixed(2);
+  return n<0?'-'+s:s;
+}
+function fmtP(n){if(isNaN(n))return'—';return(n>=0?'+':'')+n.toFixed(1)+'%';}
+function fmtU(n){if(isNaN(n))return'—';return(n>=0?'+':'')+n.toFixed(2)+'u';}
+function setText(id,v){const e=document.getElementById(id);if(e)e.textContent=v;}
+function colorEl(id,v){
+  const e=document.getElementById(id);if(!e)return;
+  e.classList.remove('c-green','c-red');
+  e.classList.add(v>=0?'c-green':'c-red');
+}
+function setPeriod(d,btn){
+  period=d;
+  document.querySelectorAll('.ptab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');render();
+}
+function setTipster(v){tipsterFilter=v;render();}
+
+// ── RECENT BETS FEED ───────────────────────────────────────────────────────
+function buildRecentFeed(bets){
+  const tbody=document.getElementById('recentBody');
+  tbody.innerHTML='';
+
+  // Sort by date descending, take last 8 resulted bets (W/L only, not refunds)
+  const resulted=bets
+    .filter(b=>b.result==='W'||b.result==='L')
+    .sort((a,b)=>b.date-a.date)
+    .slice(0,8);
+
+  if(!resulted.length){
+    tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:16px;">No resulted bets yet</td></tr>';
+    return;
+  }
+
+  resulted.forEach(b=>{
+    const tr=document.createElement('tr');
+    const isWin=b.result==='W';
+    const dateStr=b.date?b.date.toLocaleDateString('en-AU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'—';
+    // Get selection from raw data
+    const selection=(b._raw&&(b._raw['SELECTION']||b._raw['Selection']))||'—';
+    const bookie=(b._raw&&(b._raw['BOOKIE']||b._raw['Bookie']))||'—';
+    tr.innerHTML=`
+      <td style="color:var(--muted);font-size:11px;">${dateStr}</td>
+      <td style="color:var(--text);font-weight:600;">${b.tipster}</td>
+      <td style="color:var(--dim);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${selection}</td>
+      <td style="color:var(--dim);font-size:11px;">${bookie}</td>
+      <td style="color:var(--gold);font-family:'JetBrains Mono',monospace;">${b.odds>0?b.odds.toFixed(2):'—'}</td>
+      <td style="color:var(--dim);">${fmt$(b.stake)}</td>
+      <td><span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;background:${isWin?'rgba(63,185,80,.15)':'rgba(248,81,73,.15)'};color:${isWin?'var(--green)':'var(--red)'};">${b.result}</span></td>
+      <td style="font-weight:600;color:${isWin?'var(--green)':'var(--red)'};">${fmt$(b.netCash)}</td>`;
+    tbody.appendChild(tr);
+  });
+
+  // Update last updated timestamp
+  if(resulted.length){
+    const latest=resulted[0];
+    const ts=latest.date?latest.date.toLocaleDateString('en-AU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'—';
+    document.getElementById('lastUpdatedFeed').textContent='Last bet: '+ts;
+  }
+}
+
+loadData();
+</script>
+</body>
+</html>
